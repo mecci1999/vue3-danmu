@@ -1,38 +1,44 @@
-import pkg from "./package.json";
-import json from "rollup-plugin-json";
-import resolve from "@rollup/plugin-node-resolve";
-import commonjs from "@rollup/plugin-commonjs";
-import { babel } from "@rollup/plugin-babel";
-import { terser } from "rollup-plugin-terser";
-import filesize from "rollup-plugin-filesize";
+const filesize = require('rollup-plugin-filesize')
+const typescript = require('rollup-plugin-typescript2')
+const babel = require('@rollup/plugin-babel')
+const dts = require('rollup-plugin-dts')
+const tscAlias = require('rollup-plugin-tsc-alias')
 
-const formatName = "simple-barrage";
+export default [
+  {
+    input: './src/index.ts',
+    output: [
+      {
+        dir: './dist',
+        format: 'cjs',
+        entryFileNames: '[name].js'
+      },
+      {
+        dir: './dist',
+        format: 'esm',
+        entryFileNames: '[name].esm.js'
+      }
+    ],
+    plugins: [
+      babel({ exclude: 'node_modules/**' }),
+      typescript({
+        tsconfig: './tsconfig.build.json'
+      }),
+      tscAlias(),
+      filesize()
+    ]
+  },
+  {
+    input: 'dist/src/index.d.ts',
+    output: [{ file: 'dist/index.d.ts', format: 'es' }],
+    plugins: [
+      dts.default({
+        compilerOptions: {
+          emitDeclarationOnly: true,
+          resolveJsonModule: true
+        }
+      })
+    ]
+  }
+]
 
-export default {
-  input: "./src/index.js",
-  output: [
-    {
-      file: pkg.main,
-      format: "cjs",
-    },
-    {
-      file: pkg.module,
-      format: "esm",
-    },
-    {
-      file: pkg.browser,
-      format: "umd",
-      name: formatName,
-    },
-  ],
-  plugins: [
-    json(),
-    commonjs({
-      include: /node_modules/,
-    }),
-    resolve({ preferBuiltins: true, jsnext: true, main: true, browser: true }),
-    babel({ exclude: "node_modules/**" }),
-    terser(),
-    filesize(),
-  ],
-};

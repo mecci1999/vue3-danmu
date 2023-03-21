@@ -1,33 +1,34 @@
 {
   "name": "vue-simple-barrage",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "一个简易的弹幕系统，基于Vue3框架",
-  "main": "lib/bundle.cjs.js",
-  "jsnext:main": "lib/bundle.esm.js",
-  "module": "lib/bundle.esm.js",
-  "browser": "lib/bundle.browser.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
   "scripts": {
-    "build": "npx rollup -c rollup.config.js"
+    "build": "rm -rf ./dist && rollup -c rollup.config.js"
   },
   "keywords": [
     "barrage",
-    "vue3"
+    "vue3",
+    "typescript",
+    "danmu"
   ],
   "author": "darwin <mecci1999@163.com>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mecci1999/vue3-danmu.git"
   },
-  "homepage":"https://github.com/mecci1999/vue3-danmu#readme",
+  "homepage": "https://github.com/mecci1999/vue3-danmu#readme",
   "license": "ISC",
   "devDependencies": {
     "@rollup/plugin-babel": "^6.0.3",
-    "@rollup/plugin-commonjs": "^24.0.1",
-    "@rollup/plugin-eslint": "^9.0.3",
-    "@rollup/plugin-node-resolve": "^15.0.1",
+    "rollup": "^3.6.0",
+    "rollup-plugin-dts": "^5.3.0",
     "rollup-plugin-filesize": "^10.0.0",
-    "vue": "^3.2.47",
-    "rollup-plugin-json": "^4.0.0",
-    "rollup-plugin-terser": "^7.0.2"
+    "rollup-plugin-tsc-alias": "^1.1.2",
+    "rollup-plugin-typescript2": "^0.34.1",
+    "typescript": "^5.0.2",
+    "vue": "^3.2.47"
   }
 }
