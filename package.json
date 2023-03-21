@@ -1,6 +1,6 @@
 {
   "name": "vue-simple-barrage",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "一个简易的弹幕系统，基于Vue3框架",
   "main": "lib/bundle.cjs.js",
   "jsnext:main": "lib/bundle.esm.js",
@@ -13,17 +13,20 @@
     "barrage",
     "vue3"
   ],
-  "author": "darwin",
-  "license": "ISC",
-  "dependencies": {
-    "vue": "^3.2.47"
+  "author": "darwin <mecci1999@163.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mecci1999/vue3-danmu.git"
   },
+  "homepage":"https://github.com/mecci1999/vue3-danmu#readme",
+  "license": "ISC",
   "devDependencies": {
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-commonjs": "^24.0.1",
     "@rollup/plugin-eslint": "^9.0.3",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "rollup-plugin-filesize": "^10.0.0",
+    "vue": "^3.2.47",
     "rollup-plugin-json": "^4.0.0",
     "rollup-plugin-terser": "^7.0.2"
   }
