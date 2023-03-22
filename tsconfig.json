@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "module": "CommonJS",
+    "module": "ESNext",
     "allowJs": true,
     "outDir": "./dist",
     "rootDir": "./",
@@ -18,11 +18,8 @@
     "moduleResolution": "node",
     "declaration": true,
     "lib": [
-      "esnext"
-    ],
-    "types": [
-      "node",
-      "mocha"
+      "esnext",
+      "DOM"
     ],
     "paths": {
       "@/*": [

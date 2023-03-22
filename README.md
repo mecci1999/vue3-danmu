@@ -114,3 +114,12 @@ const props = defineProps({
   </div>
 </template>
 ```
+
+### 提示
+如果在ios设备上发现弹幕有抖动的情况，可以在弹幕组件(例子中的类名barrage-item的div)的样式加入下面代码
+``` css
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0); // 开启GUP加速
+  -webkit-transform: translateZ(0);
+```

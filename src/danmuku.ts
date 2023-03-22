@@ -1,27 +1,37 @@
 /**
  * 弹幕库类
  */
-import Track from "./track.js";
-import { getEl, isArray, isEmptyArray, isObject } from "./utils.js";
-import { TIME_PER_FRAME } from "./config.js";
-import Danmu from "./danmu.js";
-import EventEmitter from "./event-emitter.js";
+import Track from "./track";
+import { getEl, isArray, isEmptyArray, isObject } from "./utils";
+import { TIME_PER_FRAME } from "./config";
+import Danmu from "./danmu";
+import EventEmitter from "./event-emitter";
+import {
+  IDanmuContainer,
+  IDanmuEventHandler,
+  IDanmukuOptions,
+  IDanmuObject,
+} from "./types/index.js";
 
-class Danmaku extends EventEmitter {
-  el;
-  waitingQueue = [];
-  tracks = [];
-  maxTrack = 4;
-  domPool = [];
-  maxPool = 10;
-  danmuComp;
-  duration = 8000; // 弹幕展示的时长
-  trackWidth; // 轨道的宽度
-  trackHeight = 32; // 轨道的高度
-  animation = null;
-  elmToObj = new WeakMap();
+class Danmaku<T> extends EventEmitter {
+  el: HTMLElement;
+  waitingQueue: IDanmuObject<T>[] = [];
+  tracks: Track<T>[] = [];
+  maxTrack: number = 4;
+  domPool: IDanmuContainer[] = [];
+  maxPool: number = 10;
+  danmuComp: any; // 弹幕组件
+  duration: number = 8000; // 弹幕展示的时长
+  trackWidth: number; // 轨道的宽度
+  trackHeight: number = 32; // 轨道的高度
+  animation: number | null = null;
+  elmToObj: WeakMap<HTMLElement, Danmu<T>> = new WeakMap();
 
-  constructor(el, danmuComp, options) {
+  constructor(
+    el: HTMLElement,
+    danmuComp: any,
+    options?: Partial<IDanmukuOptions>
+  ) {
     super();
     this.el = getEl(el);
     this.trackWidth = this.el.offsetWidth;
@@ -37,30 +47,29 @@ class Danmaku extends EventEmitter {
     this.bindEvent();
   }
 
-  get _defaultSpeed() {
-    // return this.trackWidth / (this.duration / TIME_PER_FRAME)
+  // 弹幕默认速度
+  private get _defaultSpeed(): number {
     return (this.trackWidth / this.duration) * TIME_PER_FRAME;
   }
 
   // 获取一个速度系数，用于随机速度
-  get _speedCoefficient() {
+  private get _speedCoefficient(): number {
     return 0.8 + Math.random() * 1.3;
   }
+
+  // 监听弹幕的点击事件
   bindEvent() {
-    this.el.addEventListener("click", (e) => {
+    this.el.addEventListener("click", (e: MouseEvent) => {
       this.clearStopStatus();
-      console.log(e.target);
-
-      const target = e.target;
-
+      const target = e.target as HTMLElement;
       const obj = this.elmToObj.get(target);
-
       if (target.id === "danmu-container") {
-        obj.stop = true;
+        obj!.stop = true;
         this.el.style.pointerEvents = "auto";
         const rect = target.getBoundingClientRect();
         const position = {
           top: rect.top + rect.height,
+          // @ts-ignore
           left: e.layerX,
         };
         this.$emit("onChoose", position);
@@ -69,6 +78,8 @@ class Danmaku extends EventEmitter {
       }
     });
   }
+
+  // 清除弹幕的停止状态
   clearStopStatus() {
     this.el.style.pointerEvents = "none";
     this.tracks.forEach((track) => {
@@ -77,11 +88,12 @@ class Danmaku extends EventEmitter {
       });
     });
   }
+
   // 添加弹幕到等待队列中
-  add(data) {
+  add(data: T[] | T) {
     if (isArray(data)) {
-      data.forEach((item) => {
-        const danmuObject = {
+      (data as T[]).forEach((item) => {
+        const danmuObject: IDanmuObject<T> = {
           danmuProps: item,
           speed: 0,
           offset: this.trackWidth,
@@ -91,7 +103,7 @@ class Danmaku extends EventEmitter {
       });
     } else {
       const danmuObject = {
-        danmuProps: data,
+        danmuProps: data as T,
         speed: 0,
         offset: this.trackWidth,
         width: 0,
@@ -99,24 +111,27 @@ class Danmaku extends EventEmitter {
       this.waitingQueue.push(danmuObject);
     }
   }
+
   // 初始化dom池
   initDomPool() {
     for (let i = 0; i < this.maxPool; i++) {
       const dom = document.createElement("div");
       dom.style.display = "inline-block";
-      const danmuContainer = {
+      const danmuContainer: IDanmuContainer = {
         dom,
         isMount: false,
       };
       this.domPool.push(danmuContainer);
     }
   }
+
   // 初始化轨道实例
   initTracks() {
     for (let i = 0; i < this.maxTrack; i++) {
       this.tracks.push(new Track());
     }
   }
+
   // 开始
   start() {
     // 显示容器
@@ -127,6 +142,7 @@ class Danmaku extends EventEmitter {
     // 开始渲染
     this._render();
   }
+
   // 暂停
   stop() {
     if (!this.animation) {
@@ -135,7 +151,8 @@ class Danmaku extends EventEmitter {
     cancelAnimationFrame(this.animation);
     this.animation = null;
   }
-  // 清除
+
+  // 清除所有的弹幕
   clear() {
     this.tracks.forEach((track) => {
       track.danmus.forEach((danmu) => {
@@ -145,6 +162,7 @@ class Danmaku extends EventEmitter {
     });
     this.stop();
   }
+
   // 核心方法，负责轨道的渲染
   _render() {
     this._extractDanmu();
@@ -160,9 +178,7 @@ class Danmaku extends EventEmitter {
         dom.style.transform = `translate(${offset}px, ${
           trackIndex * this.trackHeight + trackIndex * 16
         }px)`;
-
         danmu.offset -= danmu.speed;
-
         // 清除已经运行完的弹幕
         if (danmu.offset < 0 && Math.abs(danmu.offset) > danmu.width + 5) {
           isRemove = true;
@@ -178,12 +194,12 @@ class Danmaku extends EventEmitter {
         track.removeOfIndex(removeIndex);
       }
     });
-
     this.animation = requestAnimationFrame(this._render.bind(this));
   }
+
   // 将等待队列中的弹幕推送到合适的轨道
   _extractDanmu() {
-    let isEntered;
+    let isEntered: boolean;
     for (let i = 0; i < this.waitingQueue.length; ) {
       isEntered = this._pushToTrack(this.waitingQueue[i]);
       if (!isEntered) {
@@ -192,8 +208,9 @@ class Danmaku extends EventEmitter {
       this.waitingQueue.shift();
     }
   }
+
   // 推入轨道
-  _pushToTrack(danmuObject) {
+  _pushToTrack(danmuObject: IDanmuObject<T>): boolean {
     const trackId = this._findTrack();
     if (trackId === -1) {
       return false;
@@ -201,7 +218,7 @@ class Danmaku extends EventEmitter {
     if (!this.domPool.length) {
       return false;
     }
-    const danmuContainer = this.domPool.pop();
+    const danmuContainer = this.domPool.pop() as IDanmuContainer;
     // 创建弹幕的实例
     const { offset, danmuProps } = danmuObject;
     const danmu = new Danmu(danmuContainer, this.danmuComp, danmuProps, offset);
@@ -215,7 +232,7 @@ class Danmaku extends EventEmitter {
     const track = this.tracks[trackId];
     const trackOffset = track.offset;
     const trackWidth = this.trackWidth;
-    let speed;
+    let speed: number;
     if (isEmptyArray(track.danmus)) {
       speed = this._defaultSpeed * this._speedCoefficient;
     } else {
@@ -229,8 +246,9 @@ class Danmaku extends EventEmitter {
     track.offset = trackWidth + width * 1.1 + Math.random() * 50;
     return true;
   }
+
   // 查找合适推送弹幕的轨道
-  _findTrack() {
+  _findTrack(): number {
     let id = -1;
     let max = -Infinity; // 最大剩余空间
     this.tracks.forEach((tranck, index) => {
@@ -248,10 +266,11 @@ class Danmaku extends EventEmitter {
     return id;
   }
 
-  onChoose(handler) {
+  onChoose(handler: IDanmuEventHandler) {
     this.$on("onChoose", handler);
   }
-  onUnchoose(handler) {
+
+  onUnchoose(handler: IDanmuEventHandler) {
     this.$on("onUnchoose", handler);
   }
 }

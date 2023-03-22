@@ -22,7 +22,6 @@
   "homepage": "https://github.com/mecci1999/vue3-danmu#readme",
   "license": "ISC",
   "devDependencies": {
-    "@rollup/plugin-babel": "^6.0.3",
     "rollup": "^3.6.0",
     "rollup-plugin-dts": "^5.3.0",
     "rollup-plugin-filesize": "^10.0.0",
